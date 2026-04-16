@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Seminario de Investigación 2 — Sistema interactivo de retroalimentación, evaluación y análisis para la Maestría en Investigación Operativa y Estadística.">
+    <title>Seminario de Investigación 2 — Maestría en IO y Estadística</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════
+         LOGIN SCREEN
+         ═══════════════════════════════════════════════════════ -->
+    <div class="login-screen" id="login-screen">
+
+        <!-- Canvas Particles Background -->
+        <canvas id="canvas-particles"></canvas>
+
+        <!-- Floating Orbs behind login -->
+        <div class="login-orbs">
+            <div class="login-orb login-orb-1"></div>
+            <div class="login-orb login-orb-2"></div>
+            <div class="login-orb login-orb-3"></div>
+        </div>
+
+        <!-- Login Container -->
+        <div class="login-container" id="login-container">
+
+            <!-- Sign Up Form -->
+            <div class="form-container sign-up-container">
+                <form id="signup-form">
+                    <div class="login-brand">
+                        <i class="fas fa-brain"></i>
+                        <span>Seminario Inv. 2</span>
+                    </div>
+                    <h1>Crear Cuenta</h1>
+                    <span class="login-subtitle">Usa tu correo institucional para registrarte</span>
+                    <div class="login-input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" placeholder="Nombre completo" id="signup-name" required />
+                    </div>
+                    <div class="login-input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" placeholder="Correo electrónico" id="signup-email" required />
+                    </div>
+                    <div class="login-input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" placeholder="Contraseña (mín. 6 caracteres)" id="signup-password" required minlength="6" />
+                    </div>
+                    <div class="google-divider">
+                        <span class="google-divider-line"></span>
+                        <span class="google-divider-text">o</span>
+                        <span class="google-divider-line"></span>
+                    </div>
+                    <div id="google-signup-container" class="google-btn-container"></div>
+                    <button type="button" class="login-btn login-btn-google google-fallback-btn" id="btn-google-signup">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-btn-icon">
+                        Continuar con Google
+                    </button>
+                    <button type="submit" class="login-btn" id="btn-signup">
+                        <i class="fas fa-user-plus"></i> Registrarse
+                    </button>
+                </form>
+            </div>
+
+            <!-- Sign In Form -->
+            <div class="form-container sign-in-container">
+                <form id="signin-form">
+                    <div class="login-brand">
+                        <i class="fas fa-brain"></i>
+                        <span>Seminario Inv. 2</span>
+                    </div>
+                    <h1>Iniciar Sesión</h1>
+                    <span class="login-subtitle">Ingresa con tu cuenta</span>
+                    <div class="login-input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" placeholder="Correo electrónico" id="signin-email" required />
+                    </div>
+                    <div class="login-input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" placeholder="Contraseña" id="signin-password" required />
+                    </div>
+                    <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                    <div class="google-divider">
+                        <span class="google-divider-line"></span>
+                        <span class="google-divider-text">o</span>
+                        <span class="google-divider-line"></span>
+                    </div>
+                    <div id="google-signin-container" class="google-btn-container"></div>
+                    <button type="button" class="login-btn login-btn-google google-fallback-btn" id="btn-google-signin">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-btn-icon">
+                        Continuar con Google
+                    </button>
+                    <button type="submit" class="login-btn" id="btn-signin">
+                        <i class="fas fa-sign-in-alt"></i> Ingresar
+                    </button>
+                </form>
+            </div>
+
+            <!-- Overlay Panel -->
+            <div class="overlay-container">
+                <div class="overlay">
+                    <div class="overlay-panel overlay-left">
+                        <h1 class="overlay-title">¡Bienvenido de nuevo!</h1>
+                        <p class="overlay-text">Inicia sesión para continuar evaluando y mejorando el seminario</p>
+                        <button class="ghost-btn" id="signIn">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                        </button>
+                    </div>
+                    <div class="overlay-panel overlay-right">
+                        <h1 class="overlay-title">¡Hola, compañero!</h1>
+                        <p class="overlay-text">Regístrate para participar en la retroalimentación del seminario</p>
+                        <button class="ghost-btn" id="signUp">
+                            <i class="fas fa-user-plus"></i> Registrarse
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         APP SCREEN (Hidden until login)
+         ═══════════════════════════════════════════════════════ -->
+    <div class="app-screen" id="app-screen" style="display: none;">
+
+        <!-- AMBIENT BACKGROUND -->
+        <div class="ambient-bg">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+            <div class="orb orb-4"></div>
+        </div>
+
+        <!-- SVG Filter for Gooey Effect -->
+        <svg style="position: absolute; width: 0; height: 0;">
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+            </filter>
+        </svg>
+
+        <!-- ═══════════════ SIDEBAR NAVIGATION ═══════════════ -->
+        <nav class="sidebar" id="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <span class="brand-text">Seminario Inv. 2</span>
+                </div>
+
+                <ul class="nav-list" id="nav-list-main">
+                    <li class="nav-item" data-tooltip="Dashboard">
+                        <a href="#" class="nav-link active" data-section="dashboard" id="nav-dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tooltip="Evaluación">
+                        <a href="#" class="nav-link" data-section="evaluacion" id="nav-evaluacion">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Evaluación</span>
+                        </a>
+                    </li>
+                    <!-- Admin-only nav items -->
+                    <li class="nav-item admin-only" data-tooltip="Análisis">
+                        <a href="#" class="nav-link" data-section="analisis" id="nav-analisis">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Análisis</span>
+                        </a>
+                    </li>
+                    <li class="nav-item admin-only" data-tooltip="Fortalezas">
+                        <a href="#" class="nav-link" data-section="fortalezas" id="nav-fortalezas">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Fortalezas y Debilidades</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tooltip="Sugerencias">
+                        <a href="#" class="nav-link" data-section="sugerencias" id="nav-sugerencias">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Sugerencias</span>
+                        </a>
+                    </li>
+                    <!-- Student-only nav items -->
+                    <li class="nav-item student-only" data-tooltip="Mis Entregas">
+                        <a href="#" class="nav-link" data-section="trabajos" id="nav-trabajos">
+                            <i class="fas fa-file-upload"></i>
+                            <span>Mis Entregas</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <ul class="nav-list">
+                <li class="nav-item admin-only" data-tooltip="Configuración">
+                    <a href="#" class="nav-link" data-section="config" id="nav-config">
+                        <i class="fas fa-cog"></i>
+                        <span>Configuración</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tooltip="Cerrar Sesión">
+                    <a href="#" class="nav-link" id="nav-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ═══════════════ MOBILE HEADER ═══════════════ -->
+        <header class="mobile-header" id="mobile-header">
+            <button class="hamburger" id="hamburger" aria-label="Abrir menú">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-brand">
+                <i class="fas fa-brain"></i>
+                <span>Seminario Inv. 2</span>
+            </div>
+            <div class="mobile-user" id="mobile-user">
+                <i class="fas fa-user-circle"></i>
+            </div>
+        </header>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+        <main class="main-content" id="main-content">
+
+            <!-- User Welcome Bar -->
+            <div class="welcome-bar glass-card" id="welcome-bar">
+                <div class="welcome-info">
+                    <span class="welcome-greeting" id="welcome-greeting">Bienvenido</span>
+                    <span class="welcome-role" id="welcome-role">Administrador</span>
+                </div>
+                <button class="btn-logout-mini" id="btn-logout-desktop" title="Cerrar sesión">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+
+            <!-- ─── DASHBOARD ─── -->
+            <section class="page-section active" id="section-dashboard">
+                <!-- Hero with Liquid Glass -->
+                <div class="hero-area">
+                    <div class="gooey-container">
+                        <div class="background-shape shape-1"></div>
+                        <div class="background-shape shape-2"></div>
+                    </div>
+                    <div class="liquid-glass" id="liquid-glass">
+                        <div class="particle" style="width: 14px; height: 14px; top: 18%; left: 22%;"></div>
+                        <div class="particle" style="width: 9px; height: 9px; top: 62%; left: 78%;"></div>
+                        <div class="particle" style="width: 7px; height: 7px; top: 38%; left: 52%;"></div>
+                        <div class="particle" style="width: 11px; height: 11px; top: 75%; left: 30%;"></div>
+                        <div class="hero-content">
+                            <h1 class="hero-title">Seminario de Investigación 2</h1>
+                            <p class="hero-subtitle">Sistema de Retroalimentación</p>
+                            <p class="hero-desc">Maestría en Investigación Operativa y Estadística</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Metrics (Admin view) -->
+                <div class="admin-only">
+                    <div class="section-header">
+                        <h2>Panel General</h2>
+                        <p class="section-desc">Resumen del estado actual del seminario</p>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card glass-card" id="metric-sesiones">
+                            <div class="metric-icon" style="--accent: #00ff88;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Sesiones Completadas</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-card" id="metric-evaluaciones">
+                            <div class="metric-icon" style="--accent: #00c9ff;">
+                                <i class="fas fa-poll"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Evaluaciones Recibidas</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-card" id="metric-satisfaccion">
+                            <div class="metric-icon" style="--accent: #ff6b9d;">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0" data-suffix="%">0</span>
+                                <span class="metric-label">Satisfacción General</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-card" id="metric-sugerencias">
+                            <div class="metric-icon" style="--accent: #ffd166;">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Sugerencias Activas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deliverables Management -->
+                    <div class="section-header" style="margin-top: 48px;">
+                        <h2><i class="fas fa-tasks" style="color: var(--primary); margin-right: 10px;"></i>Gestión de Entregas</h2>
+                        <p class="section-desc">Crea actividades con fecha límite y consulta el estado de las entregas</p>
+                    </div>
+
+                    <!-- Create deliverable form -->
+                    <div class="deliverable-create glass-card">
+                        <div class="eval-create-header">
+                            <i class="fas fa-plus-circle"></i>
+                            <h3>Nueva Entrega</h3>
+                        </div>
+                        <form id="admin-create-deliverable-form" class="admin-session-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="new-del-title"><i class="fas fa-tag" style="margin-right: 6px; opacity: 0.5;"></i>Nombre de la Entrega</label>
+                                    <input type="text" id="new-del-title" class="form-control" placeholder="Ej: Idea del proyecto" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-del-deadline"><i class="fas fa-calendar-alt" style="margin-right: 6px; opacity: 0.5;"></i>Fecha Límite</label>
+                                    <input type="datetime-local" id="new-del-deadline" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-del-desc"><i class="fas fa-align-left" style="margin-right: 6px; opacity: 0.5;"></i>Descripción (opcional)</label>
+                                <textarea id="new-del-desc" class="form-control" placeholder="Instrucciones o detalles de la entrega" rows="2" style="resize: vertical;"></textarea>
+                            </div>
+                            <!-- AI Evaluation Prompt -->
+                            <div class="form-group" style="margin-top: 8px;">
+                                <label for="new-del-ai-prompt">
+                                    <i class="fas fa-robot" style="margin-right: 6px; color: var(--primary); opacity: 0.8;"></i>
+                                    Instrucciones específicas para la IA
+                                    <span style="opacity:0.45; font-size:0.78rem; font-weight:400; margin-left:6px;">(opcional — complementa la evaluación automática)</span>
+                                </label>
+                                <textarea
+                                    id="new-del-ai-prompt"
+                                    class="form-control"
+                                    placeholder="Ej: Esta entrega corresponde al Capítulo 2 del proyecto de investigación. La IA debe evaluar la coherencia entre la pregunta de investigación planteada y el marco teórico desarrollado, así como la pertinencia de las fuentes bibliográficas utilizadas."
+                                    rows="3"
+                                    style="resize: vertical; border-color: rgba(0,255,136,0.25); font-size: 0.85rem;"
+                                ></textarea>
+                                <p style="font-size: 0.73rem; opacity: 0.45; margin: 4px 0 0 2px; line-height: 1.4;">
+                                    <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
+                                    Sin importar el modelo de IA que se use, siempre responderá bajo los mismos lineamientos académicos establecidos por el sistema. Este campo añade contexto específico de la entrega.
+                                </p>
+                            </div>
+                            <!-- Evaluation Parameters -->
+                            <div class="form-group" style="margin-top: 8px;">
+                                <label><i class="fas fa-brain" style="margin-right: 6px; opacity: 0.5;"></i>Parámetros de Evaluación IA <span style="opacity:0.4; font-size:0.8rem;">(opcionales)</span></label>
+                                <div id="del-params-list" class="del-params-list">
+                                    <!-- Dynamic parameter rows -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline" id="btn-add-param" style="margin-top: 8px;">
+                                    <i class="fas fa-plus"></i> Agregar Parámetro
+                                </button>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="btn-create-del">
+                                <i class="fas fa-folder-plus"></i>
+                                Crear Entrega
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Deliverables list -->
+                    <div class="deliverables-list" id="admin-deliverables-list">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="section-header" style="margin-top: 48px;">
+                        <h2>Actividad Reciente</h2>
+                    </div>
+                    <div class="activity-list">
+                        <!-- Populated dynamically from API -->
+                    </div>
+                </div>
+
+                <!-- Student Dashboard -->
+                <div class="student-only">
+                    <div class="section-header">
+                        <h2>Mi Panel</h2>
+                        <p class="section-desc">Tu actividad en el seminario</p>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card glass-card">
+                            <div class="metric-icon" style="--accent: #00ff88;">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Evaluaciones Enviadas</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-card">
+                            <div class="metric-icon" style="--accent: #00c9ff;">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Sugerencias Hechas</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-card">
+                            <div class="metric-icon" style="--accent: #ffd166;">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Entregas Enviadas</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass-card">
+                            <div class="metric-icon" style="--accent: #a78bfa;">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" data-count="0">0</span>
+                                <span class="metric-label">Sesiones Pendientes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming deadlines -->
+                    <div class="section-header" style="margin-top: 40px;">
+                        <h3><i class="fas fa-clock" style="color: var(--primary); margin-right: 8px;"></i>Próximos Plazos</h3>
+                    </div>
+                    <div class="student-upcoming-list" id="student-upcoming-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── EVALUACIÓN ─── -->
+            <section class="page-section" id="section-evaluacion">
+
+                <!-- ══ ADMIN VIEW: Gestión de sesiones + reporte ══ -->
+                <div class="admin-only">
+                    <div class="section-header">
+                        <h2>Gestión de Evaluaciones</h2>
+                        <p class="section-desc">Crea sesiones, define plazos y consulta las evaluaciones de los estudiantes</p>
+                    </div>
+
+                    <!-- Create new session -->
+                    <div class="eval-report-controls glass-card">
+                        <div class="eval-create-header">
+                            <i class="fas fa-plus-circle"></i>
+                            <h3>Habilitar Nueva Sesión</h3>
+                        </div>
+                        <form id="admin-create-session-form" class="admin-session-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="new-session-title">Nombre de la Sesión</label>
+                                    <input type="text" id="new-session-title" class="form-control" placeholder="Ej: Introducción al Seminario" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-session-date">Fecha de la Sesión</label>
+                                    <input type="date" id="new-session-date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="new-session-deadline">Fecha Límite para Evaluar</label>
+                                    <input type="datetime-local" id="new-session-deadline" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-session-desc">Descripción (opcional)</label>
+                                    <input type="text" id="new-session-desc" class="form-control" placeholder="Breve descripción de la sesión">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btn-create-session">
+                                <i class="fas fa-calendar-plus"></i>
+                                Crear Sesión
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Existing sessions list -->
+                    <div class="section-header" style="margin-top: 32px;">
+                        <h3>Sesiones Creadas</h3>
+                    </div>
+                    <div class="admin-sessions-list" id="admin-sessions-list">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Session report (shown when selecting a session) -->
+                    <div id="eval-report-section" style="display: none;">
+                        <div class="section-header" style="margin-top: 32px;">
+                            <h3 id="report-session-title">Reporte de Sesión</h3>
+                        </div>
+
+                        <!-- Session stats summary -->
+                        <div class="eval-report-stats" id="eval-report-stats">
+                            <div class="metrics-grid">
+                                <div class="metric-card glass-card">
+                                    <div class="metric-icon" style="--accent: #00ff88;">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <span class="metric-value" id="stat-count">0</span>
+                                        <span class="metric-label">Evaluaciones Recibidas</span>
+                                    </div>
+                                </div>
+                                <div class="metric-card glass-card">
+                                    <div class="metric-icon" style="--accent: #ffd166;">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <span class="metric-value" id="stat-rating">0</span>
+                                        <span class="metric-label">Calificación Promedio</span>
+                                    </div>
+                                </div>
+                                <div class="metric-card glass-card">
+                                    <div class="metric-icon" style="--accent: #00c9ff;">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <span class="metric-value" id="stat-contenido">0</span>
+                                        <span class="metric-label">Contenido</span>
+                                    </div>
+                                </div>
+                                <div class="metric-card glass-card">
+                                    <div class="metric-icon" style="--accent: #ff6b9d;">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    </div>
+                                    <div class="metric-info">
+                                        <span class="metric-value" id="stat-docente">0</span>
+                                        <span class="metric-label">Docencia</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div class="eval-report-empty glass-card" id="eval-report-empty" style="display: none;">
+                            <i class="fas fa-inbox" style="font-size: 48px; opacity: 0.3; margin-bottom: 16px;"></i>
+                            <p style="opacity: 0.6;">No hay evaluaciones para esta sesión aún.</p>
+                        </div>
+
+                        <!-- Evaluation cards list -->
+                        <div class="eval-report-list" id="eval-report-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══ STUDENT VIEW: Formulario de evaluación ══ -->
+                <div class="student-only">
+                    <div class="section-header">
+                        <h2>Evaluación de Sesiones</h2>
+                        <p class="section-desc">Registra la retroalimentación de cada sesión del seminario</p>
+                    </div>
+
+                    <div class="eval-form-container glass-card">
+                        <form id="evaluation-form" class="eval-form">
+                            <div class="form-group">
+                                <label for="eval-session">Sesión a Evaluar</label>
+                                <select id="eval-session" class="form-control">
+                                    <option value="" disabled selected>Seleccionar sesión...</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Calificación General</label>
+                                <div class="star-rating" id="star-rating">
+                                    <i class="fas fa-star" data-value="1"></i>
+                                    <i class="fas fa-star" data-value="2"></i>
+                                    <i class="fas fa-star" data-value="3"></i>
+                                    <i class="fas fa-star" data-value="4"></i>
+                                    <i class="fas fa-star" data-value="5"></i>
+                                </div>
+                                <input type="hidden" id="eval-rating" value="0">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="eval-contenido">Contenido</label>
+                                    <div class="range-group">
+                                        <input type="range" id="eval-contenido" min="1" max="10" value="5" class="form-range">
+                                        <span class="range-value" id="val-contenido">5</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="eval-docente">Desempeño Docente</label>
+                                    <div class="range-group">
+                                        <input type="range" id="eval-docente" min="1" max="10" value="5" class="form-range">
+                                        <span class="range-value" id="val-docente">5</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="eval-material">Material Didáctico</label>
+                                    <div class="range-group">
+                                        <input type="range" id="eval-material" min="1" max="10" value="5" class="form-range">
+                                        <span class="range-value" id="val-material">5</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="eval-participacion">Participación</label>
+                                    <div class="range-group">
+                                        <input type="range" id="eval-participacion" min="1" max="10" value="5" class="form-range">
+                                        <span class="range-value" id="val-participacion">5</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="eval-fortalezas">Fortalezas Identificadas</label>
+                                <textarea id="eval-fortalezas" class="form-control" rows="3" placeholder="¿Qué fue lo mejor de la sesión?"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="eval-mejoras">Áreas de Mejora</label>
+                                <textarea id="eval-mejoras" class="form-control" rows="3" placeholder="¿Qué se podría mejorar?"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="eval-comentarios">Comentarios Adicionales</label>
+                                <textarea id="eval-comentarios" class="form-control" rows="2" placeholder="Cualquier observación extra..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="btn-submit-eval">
+                                <i class="fas fa-paper-plane"></i>
+                                Enviar Evaluación
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── ANÁLISIS (Admin Only) ─── -->
+            <section class="page-section" id="section-analisis">
+                <div class="section-header">
+                    <h2>Análisis de Resultados</h2>
+                    <p class="section-desc">Visualización de tendencias y métricas del seminario</p>
+                </div>
+
+                <div class="analysis-grid">
+                    <div class="chart-card glass-card">
+                        <h3 class="chart-title">Calificación por Sesión</h3>
+                        <p class="chart-desc">Promedio de calificación general (estrellas) que los estudiantes asignaron a cada sesión</p>
+                        <div class="bar-chart" id="chart-sessions">
+                            <!-- Populated dynamically from API -->
+                        </div>
+                    </div>
+
+                    <div class="chart-card glass-card">
+                        <h3 class="chart-title">Distribución por Categoría</h3>
+                        <p class="chart-desc">Promedio de cada componente de la evaluación: Contenido, Docencia, Material y Participación. Juntas, estas cuatro categorías conforman la evaluación integral de cada sesión.</p>
+                        <div class="donut-chart-container">
+                            <div class="donut-chart" id="donut-chart">
+                                <svg viewBox="0 0 36 36" class="donut-svg">
+                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
+                                    <circle class="donut-segment" id="donut-contenido" cx="18" cy="18" r="15.915" fill="none" stroke="#00ff88" stroke-width="3" stroke-dasharray="25 75" stroke-dashoffset="25"/>
+                                    <circle class="donut-segment" id="donut-docente" cx="18" cy="18" r="15.915" fill="none" stroke="#00c9ff" stroke-width="3" stroke-dasharray="25 75" stroke-dashoffset="0"/>
+                                    <circle class="donut-segment" id="donut-material" cx="18" cy="18" r="15.915" fill="none" stroke="#ff6b9d" stroke-width="3" stroke-dasharray="25 75" stroke-dashoffset="-25"/>
+                                    <circle class="donut-segment" id="donut-participacion" cx="18" cy="18" r="15.915" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="25 75" stroke-dashoffset="-50"/>
+                                </svg>
+                                <div class="donut-center">
+                                    <span class="donut-center-value" id="donut-avg">—</span>
+                                    <span class="donut-center-label">Promedio</span>
+                                </div>
+                            </div>
+                            <div class="donut-legend" id="donut-legend">
+                                <div class="legend-item"><span class="legend-dot" style="background: #00ff88;"></span>Contenido (<span id="legend-contenido">—</span>/10)</div>
+                                <div class="legend-item"><span class="legend-dot" style="background: #00c9ff;"></span>Docencia (<span id="legend-docente">—</span>/10)</div>
+                                <div class="legend-item"><span class="legend-dot" style="background: #ff6b9d;"></span>Material (<span id="legend-material">—</span>/10)</div>
+                                <div class="legend-item"><span class="legend-dot" style="background: #ffd166;"></span>Participación (<span id="legend-participacion">—</span>/10)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trend-card glass-card" style="margin-top: 32px;">
+                    <h3 class="chart-title">Tendencia de Satisfacción por Sesión</h3>
+                    <p class="chart-desc">Evolución de la calificación promedio a lo largo de las sesiones del seminario</p>
+                    <div class="trend-line" id="trend-line">
+                        <!-- Populated dynamically from API -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── FORTALEZAS Y DEBILIDADES (Admin Only) ─── -->
+            <section class="page-section" id="section-fortalezas">
+                <div class="section-header">
+                    <h2>Fortalezas y Debilidades</h2>
+                    <p class="section-desc">Análisis automático basado en las evaluaciones recibidas de los estudiantes</p>
+                </div>
+
+                <div class="strengths-grid" id="strengths-grid">
+                    <div class="strength-column">
+                        <div class="column-header strength-header">
+                            <i class="fas fa-arrow-up"></i>
+                            <h3>Fortalezas</h3>
+                        </div>
+                        <div id="strengths-list">
+                            <!-- Populated dynamically from evaluations -->
+                        </div>
+                    </div>
+
+                    <div class="strength-column">
+                        <div class="column-header weakness-header">
+                            <i class="fas fa-arrow-down"></i>
+                            <h3>Áreas de Mejora</h3>
+                        </div>
+                        <div id="weaknesses-list">
+                            <!-- Populated dynamically from evaluations -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="glass-card" id="strengths-empty" style="padding: 64px 24px; text-align: center;">
+                    <i class="fas fa-chart-line" style="font-size: 48px; opacity: 0.3; margin-bottom: 16px;"></i>
+                    <p style="opacity: 0.6;">Aún no hay suficientes evaluaciones para generar el análisis de fortalezas y debilidades.</p>
+                    <p style="opacity: 0.4; font-size: 0.85rem;">Este análisis se generará automáticamente cuando los estudiantes envíen evaluaciones.</p>
+                </div>
+            </section>
+
+            <!-- ─── SUGERENCIAS ─── -->
+            <section class="page-section" id="section-sugerencias">
+                <div class="section-header">
+                    <h2>Sugerencias de Mejora</h2>
+                    <p class="section-desc admin-only">Sugerencias enviadas por los estudiantes</p>
+                    <p class="section-desc student-only">Propuestas constructivas para enriquecer el seminario</p>
+                </div>
+
+                <!-- New Suggestion (students only) -->
+                <div class="suggestion-input glass-card student-only">
+                    <div class="suggestion-input-header">
+                        <i class="fas fa-plus-circle"></i>
+                        <h3>Nueva Sugerencia</h3>
+                    </div>
+                    <form id="suggestion-form">
+                        <div class="form-group">
+                            <label for="sug-category">Categoría</label>
+                            <select id="sug-category" class="form-control">
+                                <option value="contenido">Contenido</option>
+                                <option value="metodologia">Metodología</option>
+                                <option value="recursos">Recursos</option>
+                                <option value="organizacion">Organización</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sug-text">Tu Sugerencia</label>
+                            <textarea id="sug-text" class="form-control" rows="3" placeholder="Describe tu propuesta de mejora..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-sug">
+                            <i class="fas fa-paper-plane"></i>
+                            Enviar Sugerencia
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Existing Suggestions (populated from API) -->
+                <div class="suggestions-list" id="suggestions-list">
+                    <!-- Dynamically rendered -->
+                </div>
+            </section>
+
+            <!-- ─── MIS ENTREGAS (Student Only) ─── -->
+            <section class="page-section" id="section-trabajos">
+                <div class="section-header">
+                    <h2>Mis Entregas</h2>
+                    <p class="section-desc">Entregas pendientes y archivos enviados para el seminario</p>
+                </div>
+
+                <!-- Student deliverables list -->
+                <div class="student-deliverables-list" id="student-deliverables-list">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- General file upload -->
+                <div class="section-header" style="margin-top: 40px;">
+                    <h3>Subir Archivo General</h3>
+                    <p class="section-desc">Sube archivos que no estén asociados a una entrega específica</p>
+                </div>
+
+                <div class="upload-area glass-card" id="upload-area">
+                    <div class="upload-zone" id="upload-zone">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Arrastra tu archivo aquí</h3>
+                        <p>o haz clic para seleccionar</p>
+                        <span class="upload-formats">PDF, DOCX, PPTX — Máx. 25MB</span>
+                        <input type="file" id="file-input" hidden accept=".pdf,.docx,.pptx,.doc,.ppt">
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 32px;">
+                    <h3>Archivos Enviados</h3>
+                </div>
+                <div class="trabajos-list">
+                    <!-- Populated from API -->
+                </div>
+            </section>
+
+            <!-- ─── CONFIGURACIÓN (Admin Only) ─── -->
+            <section class="page-section" id="section-config">
+                <div class="section-header">
+                    <h2>Configuración</h2>
+                    <p class="section-desc">Ajustes generales del seminario — los cambios se guardan en la base de datos</p>
+                </div>
+
+                <form id="config-form">
+                    <div class="config-grid">
+                        <div class="config-card glass-card">
+                            <div class="config-header">
+                                <i class="fas fa-graduation-cap"></i>
+                                <h3>Información del Seminario</h3>
+                            </div>
+                            <div class="config-body">
+                                <div class="form-group">
+                                    <label for="cfg-nombre">Nombre del Seminario</label>
+                                    <input type="text" id="cfg-nombre" class="form-control" placeholder="Nombre del seminario">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cfg-universidad">Universidad</label>
+                                    <input type="text" id="cfg-universidad" class="form-control" placeholder="Nombre de la universidad">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cfg-programa">Programa de Maestría</label>
+                                    <input type="text" id="cfg-programa" class="form-control" placeholder="Nombre del programa">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cfg-sesiones">Número de Sesiones Planeadas</label>
+                                    <input type="number" id="cfg-sesiones" class="form-control" min="1" max="50" placeholder="12">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-card glass-card">
+                            <div class="config-header">
+                                <i class="fas fa-palette"></i>
+                                <h3>Personalización</h3>
+                            </div>
+                            <div class="config-body">
+                                <div class="form-group">
+                                    <label>Color Principal</label>
+                                    <div class="color-picker-group">
+                                        <div class="color-option active" data-color="#00ff88" style="background: #00ff88;" id="color-green"></div>
+                                        <div class="color-option" data-color="#00c9ff" style="background: #00c9ff;" id="color-blue"></div>
+                                        <div class="color-option" data-color="#ff6b9d" style="background: #ff6b9d;" id="color-pink"></div>
+                                        <div class="color-option" data-color="#ffd166" style="background: #ffd166;" id="color-yellow"></div>
+                                        <div class="color-option" data-color="#a78bfa" style="background: #a78bfa;" id="color-purple"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Evaluación Anónima</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="cfg-anonimo" checked>
+                                        <label for="cfg-anonimo" class="toggle-label">
+                                            <span class="toggle-inner"></span>
+                                            <span class="toggle-switch-btn"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-save-bar">
+                        <button type="submit" class="btn btn-primary btn-save-config" id="btn-save-config">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ═══════════════ TOAST NOTIFICATION ═══════════════ -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- App Scripts (ORDER MATTERS: dependencies first) -->
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/evaluations.js"></script>
+    <script src="js/deliverables.js"></script>
+    <script src="js/analysis.js"></script>
+    <script src="js/suggestions.js"></script>
+    <script src="js/uploads.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
