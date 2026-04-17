@@ -15,6 +15,9 @@ const { seedAdmin } = require('./utils/seed');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust Vercel's proxy so req.protocol returns 'https' correctly
+app.set('trust proxy', 1);
+
 // ═══════════════ SECURITY MIDDLEWARE ═══════════════
 
 // Helmet: HTTP security headers

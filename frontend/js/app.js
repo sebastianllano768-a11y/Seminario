@@ -127,11 +127,19 @@ const SeminariaApp = (function () {
 
     // ═══════════════ INITIALIZATION ═══════════════
     async function init() {
+        // Show error if Google OAuth callback failed
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('error') === 'google_auth_failed') {
+            window.history.replaceState({}, '', '/');
+            if (typeof SeminariaToast !== 'undefined') {
+                SeminariaToast.error('Error al iniciar sesión con Google. Intenta de nuevo.');
+            }
+        }
+
         // Try to restore session from saved token
         const restored = await SeminariaAuth.tryRestore();
 
         if (!restored) {
-            // Show login screen — canvas is already running from animations.js
             console.log('🔐 SeminarIA — Awaiting login');
         } else {
             console.log('🚀 SeminarIA — Session restored');
