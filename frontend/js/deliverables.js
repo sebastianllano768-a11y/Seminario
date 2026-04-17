@@ -347,57 +347,124 @@ const SeminariaDeliverables = (function () {
     function showDetailedFeedbackModal(data, studentName) {
         const { summary, feedback } = data;
 
-        let html = `<div class="del-status-overlay" id="del-detail-overlay" style="z-index: 10001;">
-            <div class="del-status-modal glass-card" style="max-width: 650px;">
-                <div class="del-status-header">
-                    <h3><i class="fas fa-clipboard-check" style="margin-right: 8px; color: var(--primary);"></i>Retroalimentaci\u00f3n — ${escapeHtml(studentName)}</h3>
-                    <button class="btn-icon" id="close-detail-feedback"><i class="fas fa-times"></i></button>
-                </div>`;
+        let html = `<div class="del-status-overlay" id="del-detail-overlay" style="z-index: 10001; backdrop-filter: blur(8px); background: rgba(0,0,0,0.6);">
+            <div class="del-status-modal glass-card" style="max-width: 700px; border-radius: 24px; padding: 0; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+                <!-- Friendly Header -->
+                <div style="background: linear-gradient(135deg, rgba(0,201,255,0.1), rgba(0,255,136,0.1)); padding: 24px 32px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 16px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #000; box-shadow: 0 4px 12px rgba(0,255,136,0.3);">
+                            <i class="fas fa-sparkles"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Resultados de tu Entrega</h3>
+                            <p style="margin: 4px 0 0 0; font-size: 0.85rem; opacity: 0.7;">Análisis detallado para ayudarte a mejorar</p>
+                        </div>
+                    </div>
+                    <button class="btn-icon" id="close-detail-feedback" style="background: rgba(255,255,255,0.1); border-radius: 50%; width: 36px; height: 36px;"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div style="padding: 32px; max-height: 70vh; overflow-y: auto;">
+`;
 
         if (summary && summary.status === 'completed') {
-            const scoreColor = summary.overall_score >= 70 ? '#00ff88' : summary.overall_score >= 40 ? '#ffd166' : '#ff6b9d';
-            const scoreMsg = summary.overall_score >= 70 ? 'Nivel satisfactorio' : summary.overall_score >= 40 ? 'En desarrollo' : 'Requiere mejoras';
+            const scoreColor = summary.overall_score >= 80 ? '#00ff88' : summary.overall_score >= 60 ? '#00c9ff' : summary.overall_score >= 40 ? '#ffd166' : '#ff6b9d';
+            const scoreIcon = summary.overall_score >= 80 ? 'fa-trophy' : summary.overall_score >= 60 ? 'fa-thumbs-up' : summary.overall_score >= 40 ? 'fa-tools' : 'fa-book-reader';
+            const scoreMsg = summary.overall_score >= 80 ? '¡Excelente trabajo!' : summary.overall_score >= 60 ? 'Vas por muy buen camino' : summary.overall_score >= 40 ? 'Hay potencial para mejorar' : 'Requiere revisión profunda';
+            
             html += `
-                <div style="text-align: center; padding: 16px 0;">
-                    <div class="feedback-score-circle" style="border-color: ${scoreColor};">
-                        <span style="color: ${scoreColor}; font-size: 1.6rem; font-weight: 700;">${summary.overall_score}%</span>
+                <!-- Global Summary Hero -->
+                <div style="text-align: center; margin-bottom: 40px; background: rgba(255,255,255,0.02); padding: 32px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="position: relative; width: 120px; height: 120px; margin: 0 auto 16px auto;">
+                        <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                            <path stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path stroke="${scoreColor}" stroke-width="3" stroke-dasharray="${summary.overall_score}, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style="transition: stroke-dasharray 1s ease-out;" />
+                        </svg>
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <span style="font-size: 2rem; font-weight: 800; color: ${scoreColor}; line-height: 1;">${summary.overall_score}%</span>
+                        </div>
                     </div>
-                    <p style="font-size: 0.88rem; font-weight: 600; color: ${scoreColor}; margin-top: 8px;">${scoreMsg}</p>
-                    <p style="opacity: 0.45; font-size: 0.75rem; margin-top: 2px;">Cumplimiento general de los criterios evaluados</p>
+                    <h4 style="font-size: 1.4rem; font-weight: 700; margin: 0 0 8px 0; color: #fff;"><i class="fas ${scoreIcon}" style="color: ${scoreColor}; margin-right: 8px;"></i>${scoreMsg}</h4>
+                    <p style="font-size: 0.95rem; opacity: 0.7; max-width: 450px; margin: 0 auto; line-height: 1.5;">Este es tu nivel de cumplimiento respecto a las instrucciones que dejó el docente para esta entrega.</p>
                 </div>
             `;
         } else if (summary && summary.status === 'pending') {
-            html += `<p style="text-align:center; padding: 24px; opacity: 0.5;"><i class="fas fa-spinner fa-spin"></i> Tu entrega est\u00e1 siendo analizada, vuelve en unos minutos...</p>`;
+            html += `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="margin-bottom: 24px;">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary);"></i>
+                    </div>
+                    <h4 style="font-size: 1.2rem; margin-bottom: 8px;">Estamos leyendo tu trabajo...</h4>
+                    <p style="opacity: 0.6; font-size: 0.95rem;">La inteligencia artificial está revisando cada detalle según los criterios del docente. Tardará menos de un minuto.</p>
+                </div>
+            `;
         } else if (summary && summary.status === 'error') {
-            html += `<p style="text-align:center; padding: 24px; opacity: 0.5;"><i class="fas fa-clock"></i> Los resultados estar\u00e1n disponibles pronto.</p>`;
+            html += `
+                <div style="text-align: center; padding: 60px 20px; background: rgba(255,107,157,0.05); border-radius: 20px; border: 1px dashed rgba(255,107,157,0.3);">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #ff6b9d; margin-bottom: 16px;"></i>
+                    <h4 style="font-size: 1.2rem; margin-bottom: 8px;">Tuvimos un problema técnico</h4>
+                    <p style="opacity: 0.7; font-size: 0.95rem;">No pudimos completar la evaluación automática de tu archivo. Por favor, intenta subirlo nuevamente o contacta a tu docente.</p>
+                </div>
+            `;
         }
 
         if (feedback && feedback.length > 0) {
-            feedback.forEach(fb => {
-                const fbScoreColor = fb.score >= 70 ? '#00ff88' : fb.score >= 40 ? '#ffd166' : '#ff6b9d';
+            html += `<h4 style="font-size: 1.1rem; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);"><i class="fas fa-tasks" style="margin-right: 8px; opacity: 0.5;"></i>Evaluación por Criterios</h4>`;
+            
+            feedback.forEach((fb, index) => {
+                const fbScoreColor = fb.score >= 80 ? '#00ff88' : fb.score >= 60 ? '#00c9ff' : fb.score >= 40 ? '#ffd166' : '#ff6b9d';
+                
                 html += `
-                    <div class="feedback-param-card">
-                        <div class="feedback-param-header">
-                            <span class="feedback-param-name">${escapeHtml(fb.parameter_name)}</span>
-                            <span class="feedback-param-score" style="color: ${fbScoreColor}; font-weight: 700;">Cumples el ${fb.score}%</span>
-                        </div>
-                        <div style="margin-bottom: 4px;">
-                            <div class="feedback-param-bar">
-                                <div class="feedback-param-bar-fill" style="width: ${fb.score}%; background: ${fbScoreColor};"></div>
+                    <div style="background: rgba(255,255,255,0.02); border-radius: 16px; padding: 24px; margin-bottom: 20px; border-left: 4px solid ${fbScoreColor}; transition: transform 0.2s ease;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <div>
+                                <h5 style="margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 600;">${index + 1}. ${escapeHtml(fb.parameter_name)}</h5>
+                                <p style="margin: 0; font-size: 0.8rem; opacity: 0.5;">${escapeHtml(fb.parameter_description || 'Criterio específico evaluado')}</p>
                             </div>
-                            <p style="font-size: 0.7rem; opacity: 0.4; margin: 3px 0 8px 0;">de lo solicitado en este criterio</p>
+                            <div style="background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px; font-weight: 700; color: ${fbScoreColor}; font-size: 0.9rem;">
+                                ${fb.score}%
+                            </div>
                         </div>
-                        ${fb.strengths ? `<div class="feedback-section"><i class="fas fa-check-circle" style="color: #00ff88;"></i> <strong>Lo que haces bien:</strong> ${escapeHtml(fb.strengths)}</div>` : ''}
-                        ${fb.improvements ? `<div class="feedback-section"><i class="fas fa-arrow-circle-up" style="color: #ffd166;"></i> <strong>D\u00f3nde mejorar:</strong> ${escapeHtml(fb.improvements)}</div>` : ''}
-                        ${fb.summary ? `<div class="feedback-section" style="opacity: 0.65; font-size: 0.79rem; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 8px; padding-top: 8px;"><i class="fas fa-comment-alt"></i> ${escapeHtml(fb.summary)}</div>` : ''}
+
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            ${fb.strengths ? `
+                            <div style="background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.1); border-radius: 12px; padding: 16px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 6px; color: #00ff88; font-weight: 600; font-size: 0.85rem;">
+                                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> LO QUE HAS HECHO MUY BIEN
+                                </div>
+                                <p style="margin: 0; font-size: 0.92rem; line-height: 1.5; color: rgba(255,255,255,0.85);">${escapeHtml(fb.strengths)}</p>
+                            </div>
+                            ` : ''}
+
+                            ${fb.improvements ? `
+                            <div style="background: rgba(255,209,102,0.05); border: 1px solid rgba(255,209,102,0.1); border-radius: 12px; padding: 16px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 6px; color: #ffd166; font-weight: 600; font-size: 0.85rem;">
+                                    <i class="fas fa-arrow-up" style="margin-right: 6px;"></i> EN ESTO PUEDES MEJORAR
+                                </div>
+                                <p style="margin: 0; font-size: 0.92rem; line-height: 1.5; color: rgba(255,255,255,0.85);">${escapeHtml(fb.improvements)}</p>
+                            </div>
+                            ` : ''}
+                            
+                            ${fb.summary ? `
+                            <div style="margin-top: 4px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); font-size: 0.85rem; font-style: italic; opacity: 0.6;">
+                                <i class="fas fa-quote-left" style="margin-right: 6px; font-size: 0.7rem;"></i> ${escapeHtml(fb.summary)}
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
                 `;
             });
-        } else if (!summary || summary.status !== 'pending') {
-            html += `<p style="text-align:center; padding: 24px; opacity: 0.5;">Los resultados estar\u00e1n disponibles pronto.</p>`;
         }
-
-        html += `</div></div>`;
+        
+        html += `
+                </div>
+                ${(summary && summary.status === 'completed') ? `
+                <div style="padding: 20px 32px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                    <p style="margin: 0; font-size: 0.85rem; opacity: 0.6;"><i class="fas fa-lightbulb" style="color: #ffd166; margin-right: 6px;"></i> Recuerda que puedes aplicar estas mejoras, eliminar tu intento actual, y volver a subir el archivo las veces que consideres necesario.</p>
+                </div>
+                ` : ''}
+            </div>
+        </div>`;
 
         const existing = document.getElementById('del-detail-overlay');
         if (existing) existing.remove();

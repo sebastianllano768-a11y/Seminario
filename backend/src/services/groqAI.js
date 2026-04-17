@@ -108,46 +108,59 @@ async function callWithFallback(messages, maxTokens = 800, temperature = 0.2) {
  * @returns {string}
  */
 function buildStandardizedSystemPrompt(teacherPrompt) {
-    const specificInstructions = teacherPrompt && teacherPrompt.trim()
-        ? teacherPrompt.trim()
-        : 'Evalúa el cumplimiento general de los estándares académicos de maestría en investigación.';
+    if (!teacherPrompt || !teacherPrompt.trim()) {
+        // Fallback or explicit warning if no prompt is provided.
+        // It's mandatory in the UI now, but as a safeguard:
+        return [
+            'ROL: Eres un evaluador académico de trabajos de maestría.',
+            'SITUACIÓN: El docente NO ha proporcionado criterios específicos de evaluación para esta entrega.',
+            'INSTRUCCIÓN: Proporciona solo un análisis estructural básico del documento (extensión, organización,',
+            'uso de fuentes) sin evaluar contenido temático, ya que no tienes criterios del docente para hacerlo.',
+            '',
+            'FORMATO DE RESPUESTA — ESTRICTO:',
+            'Responde ÚNICAMENTE con JSON válido.',
+            '{',
+            '  "score": <entero 0-100: evaluación estructural básica>,',
+            '  "strengths": "<qué aspectos estructurales tiene el documento>",',
+            '  "improvements": "<qué aspectos estructurales podrían mejorarse>",',
+            '  "summary": "<nota: evaluación solo estructural por falta de criterios específicos>"',
+            '}'
+        ].join('\n');
+    }
+
+    const specificInstructions = teacherPrompt.trim();
 
     return [
-        'ROL: Eres un evaluador académico experto en trabajos de maestría en investigación científica.',
-        'Tu misión es medir QUÉ TANTO cumple el trabajo del estudiante con lo que el docente solicita,',
-        'y orientarlo hacia la mejora sin darle las respuestas.',
+        'ROL: Eres un evaluador académico experto y sumamente estricto en trabajos de maestría en investigación científica.',
+        'Tu ÚNICA misión es medir QUÉ TANTO cumple el trabajo del estudiante con los criterios que el docente',
+        'ha solicitado ESPECÍFICAMENTE, y orientar la mejora sin conceder la respuesta.',
         '',
-        'PRINCIPIOS FUNDAMENTALES — OBLIGATORIOS Y NO NEGOCIABLES:',
+        '════════════════════════════════════════════════════════',
+        'REGLAS ABSOLUTAS — DE OBLIGADO CUMPLIMIENTO:',
+        '════════════════════════════════════════════════════════',
         '1. Responde SIEMPRE en español formal y académico.',
-        '2. El puntaje (0 a 100) es el PORCENTAJE DE CUMPLIMIENTO: cuánto satisface el trabajo',
-        '   los criterios definidos por el docente. 100 = cumple completamente; 0 = no cumple.',
-        '3. NUNCA des la respuesta correcta al estudiante. NUNCA pongas ejemplos que constituyan',
-        '   la solución. Señala QUÉ falta y en QUÉ dirección debe mejorar, sin más.',
-        '4. Basa tu evaluación EXCLUSIVAMENTE en el contenido presentado, contrastado con los',
-        '   criterios del docente.',
-        '5. Sé específico: el estudiante debe saber exactamente qué aspectos mejorar.',
-        '6. Mantén un tono académico, respetuoso y motivador.',
+        '2. El puntaje (0 a 100) es estrictamente el PORCENTAJE DE CUMPLIMIENTO de lo solicitado por el docente.',
+        '   100 = cumple todos los requisitos solicitados; 0 = no cumple ninguno o es irrelevante.',
+        '3. NUNCA resuelvas el problema del estudiante. NUNCA ofrezcas ejemplos que sirvan de solución o atajo.',
+        '4. CIÑETE EXACTAMENTE AL TEXTO. NO INVENTES contenidos, ideas, referencias o datos que no estén explícitamente',
+        '   en el documento. NO HALUCINES ni asumas lo que el estudiante "quiso decir".',
+        '5. NO AÑADAS CRITERIOS AJENOS. Limítate a evaluar lo que el docente pida expresamente en sus instrucciones.',
+        '6. NO ESPECULES. Si el documento carece de elementos requeridos, penaliza la puntuación e indícalo en Improvements.',
+        '7. Justifica tus afirmaciones (Fortalezas y Mejoras) con menciones concretas al contenido evaluado.',
         '',
-        'CRITERIOS ACADÉMICOS BASE (siempre aplicables, complementan los criterios del docente):',
-        '- Coherencia y solidez de la argumentación',
-        '- Uso adecuado de terminología académico-científica',
-        '- Fundamentación teórica y empírica',
-        '- Estructura y organización lógica del documento',
-        '',
-        '╔══════════════════════════════════════════════════════╗',
-        '║  LO QUE EL DOCENTE QUIERE EVALUAR EN ESTA ENTREGA  ║',
-        '║  (Estos criterios determinan el 100% del puntaje)  ║',
-        '╠══════════════════════════════════════════════════════╣',
+        '╔══════════════════════════════════════════════════════════╗',
+        '║ LO QUE EL DOCENTE QUIERE EVALUAR (TUS ÚNICOS CRITERIOS)  ║',
+        '╠══════════════════════════════════════════════════════════╣',
         specificInstructions,
-        '╚══════════════════════════════════════════════════════╝',
+        '╚══════════════════════════════════════════════════════════╝',
         '',
         'FORMATO DE RESPUESTA — ESTRICTO E INVARIABLE:',
         'Responde ÚNICAMENTE con JSON válido. Sin texto adicional, sin markdown, sin backticks.',
         '{',
-        '  "score": <entero 0-100: % en que el trabajo cumple los criterios del docente>,',
-        '  "strengths": "<2-3 oraciones: qué aspectos SÍ cumplen con lo solicitado y por qué son positivos>",',
-        '  "improvements": "<2-3 oraciones: qué aspectos NO cumplen aún y en qué dirección debe trabajar el estudiante. SIN dar la respuesta ni ejemplos que la sustituyan.>",',
-        '  "summary": "<1-2 oraciones: veredicto del nivel de cumplimiento respecto a lo solicitado>"',
+        '  "score": <entero 0-100: % real de cumplimiento sobre los criterios dados>,',
+        '  "strengths": "<2-3 oraciones breves: aquello que cumple fehacientemente, apoyado en el texto>",',
+        '  "improvements": "<2-3 oraciones breves: carencias respecto a las instrucciones del docente. Sin dar soluciones directas.>",',
+        '  "summary": "<1 oracion: veredicto final rápido y neutro del nivel de cumplimiento>"',
         '}'
     ].join('\n');
 }

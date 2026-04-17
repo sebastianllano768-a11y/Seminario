@@ -244,16 +244,12 @@ router.post('/:id/submit', authenticate, upload.single('file'), async (req, res,
             return res.status(409).json({ error: 'Ya tienes una entrega activa. Elimínala primero para volver a subir.' });
         }
 
-        // Check total attempt count
+        // Count total attempts (for tracking, no longer limited)
         const attemptsCheck = await pool.query(
             'SELECT COUNT(*) AS total_attempts FROM deliverable_submissions WHERE deliverable_id = $1 AND user_id = $2',
             [id, req.user.id]
         );
         const totalAttempts = parseInt(attemptsCheck.rows[0].total_attempts);
-
-        if (totalAttempts >= 2) {
-            return res.status(403).json({ error: 'Has alcanzado el límite máximo de 2 intentos permitidos.' });
-        }
 
         if (!req.file) {
             return res.status(400).json({ error: 'Debes adjuntar un archivo' });

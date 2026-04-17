@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Seminario de Investigación 2 — Sistema interactivo de retroalimentación, evaluación y análisis para la Maestría en Investigación Operativa y Estadística.">
-    <title>Seminario de Investigación 2 — Maestría en IO y Estadística</title>
+    <meta name="description" content="Seminario — Sistema interactivo de retroalimentación, evaluación y análisis para la Maestría en Investigación Operativa y Estadística.">
+    <title>Seminario — Maestría en IO y Estadística</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +42,7 @@
                 <form id="signup-form">
                     <div class="login-brand">
                         <i class="fas fa-brain"></i>
-                        <span>Seminario Inv. 2</span>
+                        <span>Seminario</span>
                     </div>
                     <h1>Crear Cuenta</h1>
                     <span class="login-subtitle">Usa tu correo institucional para registrarte</span>
@@ -79,7 +79,7 @@
                 <form id="signin-form">
                     <div class="login-brand">
                         <i class="fas fa-brain"></i>
-                        <span>Seminario Inv. 2</span>
+                        <span>Seminario</span>
                     </div>
                     <h1>Iniciar Sesión</h1>
                     <span class="login-subtitle">Ingresa con tu cuenta</span>
@@ -159,7 +159,7 @@
                     <div class="brand-icon">
                         <i class="fas fa-brain"></i>
                     </div>
-                    <span class="brand-text">Seminario Inv. 2</span>
+                    <span class="brand-text">Seminario</span>
                 </div>
 
                 <ul class="nav-list" id="nav-list-main">
@@ -227,7 +227,7 @@
             </button>
             <div class="mobile-brand">
                 <i class="fas fa-brain"></i>
-                <span>Seminario Inv. 2</span>
+                <span>Seminario</span>
             </div>
             <div class="mobile-user" id="mobile-user">
                 <i class="fas fa-user-circle"></i>
@@ -263,9 +263,7 @@
                         <div class="particle" style="width: 7px; height: 7px; top: 38%; left: 52%;"></div>
                         <div class="particle" style="width: 11px; height: 11px; top: 75%; left: 30%;"></div>
                         <div class="hero-content">
-                            <h1 class="hero-title">Seminario de Investigación 2</h1>
-                            <p class="hero-subtitle">Sistema de Retroalimentación</p>
-                            <p class="hero-desc">Maestría en Investigación Operativa y Estadística</p>
+                            <h1 class="hero-title" style="margin-bottom: 0;">Seminario</h1>
                         </div>
                     </div>
                 </div>
@@ -329,47 +327,76 @@
                             <h3>Nueva Entrega</h3>
                         </div>
                         <form id="admin-create-deliverable-form" class="admin-session-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="new-del-title"><i class="fas fa-tag" style="margin-right: 6px; opacity: 0.5;"></i>Nombre de la Entrega</label>
-                                    <input type="text" id="new-del-title" class="form-control" placeholder="Ej: Idea del proyecto" required>
+                            <!-- Step 1: Basic Info -->
+                            <div class="del-form-step">
+                                <div class="del-form-step-badge"><i class="fas fa-info-circle"></i> Paso 1 — Información básica</div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="new-del-title"><i class="fas fa-tag" style="margin-right: 6px; opacity: 0.5;"></i>Nombre de la Entrega</label>
+                                        <input type="text" id="new-del-title" class="form-control" placeholder="Ej: Capítulo 2 — Marco Teórico" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="new-del-deadline"><i class="fas fa-calendar-alt" style="margin-right: 6px; opacity: 0.5;"></i>Fecha Límite</label>
+                                        <input type="datetime-local" id="new-del-deadline" class="form-control" required>
+                                    </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="new-del-deadline"><i class="fas fa-calendar-alt" style="margin-right: 6px; opacity: 0.5;"></i>Fecha Límite</label>
-                                    <input type="datetime-local" id="new-del-deadline" class="form-control" required>
+                                    <label for="new-del-desc"><i class="fas fa-align-left" style="margin-right: 6px; opacity: 0.5;"></i>Descripción para el estudiante <span style="opacity:0.4; font-size:0.78rem;">(opcional)</span></label>
+                                    <textarea id="new-del-desc" class="form-control" placeholder="Instrucciones visibles para el estudiante sobre qué debe entregar" rows="2" style="resize: vertical;"></textarea>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="new-del-desc"><i class="fas fa-align-left" style="margin-right: 6px; opacity: 0.5;"></i>Descripción (opcional)</label>
-                                <textarea id="new-del-desc" class="form-control" placeholder="Instrucciones o detalles de la entrega" rows="2" style="resize: vertical;"></textarea>
+
+                            <!-- Step 2: AI Instructions (REQUIRED) -->
+                            <div class="del-form-step del-form-step-ai">
+                                <div class="del-form-step-badge del-form-step-badge-ai"><i class="fas fa-robot"></i> Paso 2 — Instrucciones para la evaluación automática</div>
+                                <div class="del-ai-guide">
+                                    <p class="del-ai-guide-title"><i class="fas fa-lightbulb" style="color: #ffd166;"></i> ¿Qué debe escribir aquí?</p>
+                                    <p>Describa <strong>con detalle</strong> qué espera encontrar en la entrega del estudiante. La evaluación se limitará <strong>exclusivamente</strong> a lo que usted indique — no inventará ni asumirá criterios adicionales.</p>
+                                    <div class="del-ai-examples">
+                                        <span class="del-ai-example-label"><i class="fas fa-check-circle"></i> Ejemplo:</span>
+                                        <em>"El estudiante debe presentar un marco teórico que sustente su pregunta de investigación. Debe incluir al menos 10 referencias bibliográficas recientes (últimos 5 años), una definición clara de las variables del estudio, y una revisión de al menos 3 antecedentes investigativos relevantes."</em>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-del-ai-prompt">
+                                        <i class="fas fa-clipboard-list" style="margin-right: 6px; color: var(--primary);"></i>
+                                        ¿Qué debe contener esta entrega? <span style="color: #ff6b9d; font-weight: 600;">(obligatorio)</span>
+                                    </label>
+                                    <textarea
+                                        id="new-del-ai-prompt"
+                                        class="form-control"
+                                        placeholder="Sea específico: ¿Qué temas debe abordar? ¿Qué estructura debe tener? ¿Qué fuentes debe usar? ¿Qué nivel de profundidad espera? Cuanto más detallado, mejor será la retroalimentación."
+                                        rows="4"
+                                        required
+                                        style="resize: vertical; border-color: rgba(0,255,136,0.25); font-size: 0.85rem;"
+                                    ></textarea>
+                                    <p style="font-size: 0.73rem; opacity: 0.45; margin: 4px 0 0 2px; line-height: 1.4;">
+                                        <i class="fas fa-shield-alt" style="margin-right: 4px; color: var(--primary);"></i>
+                                        La evaluación se limitará estrictamente a lo que usted indique. No le dará respuestas al estudiante, solo señalará qué cumple y qué le falta por mejorar.
+                                    </p>
+                                </div>
                             </div>
-                            <!-- AI Evaluation Prompt -->
-                            <div class="form-group" style="margin-top: 8px;">
-                                <label for="new-del-ai-prompt">
-                                    <i class="fas fa-robot" style="margin-right: 6px; color: var(--primary); opacity: 0.8;"></i>
-                                    Instrucciones específicas para la IA
-                                    <span style="opacity:0.45; font-size:0.78rem; font-weight:400; margin-left:6px;">(opcional — complementa la evaluación automática)</span>
-                                </label>
-                                <textarea
-                                    id="new-del-ai-prompt"
-                                    class="form-control"
-                                    placeholder="Ej: Esta entrega corresponde al Capítulo 2 del proyecto de investigación. La IA debe evaluar la coherencia entre la pregunta de investigación planteada y el marco teórico desarrollado, así como la pertinencia de las fuentes bibliográficas utilizadas."
-                                    rows="3"
-                                    style="resize: vertical; border-color: rgba(0,255,136,0.25); font-size: 0.85rem;"
-                                ></textarea>
-                                <p style="font-size: 0.73rem; opacity: 0.45; margin: 4px 0 0 2px; line-height: 1.4;">
-                                    <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
-                                    Sin importar el modelo de IA que se use, siempre responderá bajo los mismos lineamientos académicos establecidos por el sistema. Este campo añade contexto específico de la entrega.
-                                </p>
-                            </div>
-                            <!-- Evaluation Parameters -->
-                            <div class="form-group" style="margin-top: 8px;">
-                                <label><i class="fas fa-brain" style="margin-right: 6px; opacity: 0.5;"></i>Parámetros de Evaluación IA <span style="opacity:0.4; font-size:0.8rem;">(opcionales)</span></label>
+
+                            <!-- Step 3: Evaluation Parameters -->
+                            <div class="del-form-step">
+                                <div class="del-form-step-badge"><i class="fas fa-brain"></i> Paso 3 — Parámetros de evaluación <span style="opacity:0.5; font-size:0.78rem;">(opcionales pero recomendados)</span></div>
+                                <div class="del-ai-guide" style="margin-top: 12px; background: rgba(0,201,255,0.05); border-color: rgba(0,201,255,0.1);">
+                                    <p class="del-ai-guide-title" style="color: #00c9ff;"><i class="fas fa-balance-scale" style="color: #00c9ff;"></i> ¿Cómo dividir la evaluación?</p>
+                                    <p>Si la entrega es compleja, defina <strong>criterios específicos</strong> (ej. Estructura, Fundamentación, Referencias). La IA evaluará cada parámetro por separado, dándole al estudiante mayor claridad sobre qué parte exacta de su trabajo necesita ajustes.</p>
+                                    <div class="del-ai-examples" style="background: rgba(0,0,0,0.2);">
+                                        <span class="del-ai-example-label" style="color: #00c9ff;"><i class="fas fa-list-ul"></i> Ejemplos comunes:</span>
+                                        <ul style="margin: 6px 0 0 20px; font-size: 0.8rem; opacity: 0.85; line-height: 1.6;">
+                                            <li><strong>Nombre:</strong> Pertinencia Teórica <br><strong>¿Qué evalúa?:</strong> El documento conecta el problema con una teoría válida.</li>
+                                            <li style="margin-top: 6px;"><strong>Nombre:</strong> Uso de Normas APA <br><strong>¿Qué evalúa?:</strong> Citas y referencias bajo formato APA 7.</li>
+                                            <li style="margin-top: 6px;"><strong>Nombre:</strong> Coherencia Metodológica <br><strong>¿Qué evalúa?:</strong> El alcance de investigación coincide con la pregunta.</li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <div id="del-params-list" class="del-params-list">
                                     <!-- Dynamic parameter rows -->
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline" id="btn-add-param" style="margin-top: 8px;">
-                                    <i class="fas fa-plus"></i> Agregar Parámetro
+                                <button type="button" class="btn btn-sm btn-outline" id="btn-add-param" style="margin-top: 12px; display: block; width: 100%;">
+                                    <i class="fas fa-plus"></i> Añadir un nuevo parámetro a la rúbrica
                                 </button>
                             </div>
 
@@ -379,6 +406,7 @@
                             </button>
                         </form>
                     </div>
+
 
                     <!-- Deliverables list -->
                     <div class="deliverables-list" id="admin-deliverables-list">

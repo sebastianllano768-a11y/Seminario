@@ -270,19 +270,18 @@ const SeminariaUploads = (function () {
                             <div style="flex:1;">
                                 <i class="fas fa-file-alt"></i>
                                 <span>${escapeHtml(del.submitted_file)}</span>
-                                <span class="student-del-submitted-date">Enviado: ${new Date(del.submitted_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Intento ${del.attempt_number || 1}/2)</span>
+                                <span class="student-del-submitted-date">Enviado: ${new Date(del.submitted_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Intento ${del.attempt_number || 1})</span>
                             </div>
-                            ${(!isExpired && (!del.total_attempts || del.total_attempts < 2)) ? `
+                            ${!isExpired ? `
                                 <button class="btn btn-danger btn-sm btn-delete-submission" data-sub-id="${del.submission_id}" title="Eliminar intento para volver a subir" style="margin-left:8px; padding: 4px 8px;">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fas fa-redo-alt"></i>
                                 </button>
                             ` : ''}
                         </div>
-                        ${(del.total_attempts >= 2) ? '<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; margin-bottom: 8px;"><i class="fas fa-info-circle"></i> Has alcanzado el límite máximo de intentos (2).</div>' : ''}
                         ${aiFeedbackHtml}
                     ` : (!isExpired ? `
                         <div class="student-del-upload">
-                            ${(del.total_attempts > 0) ? `<div style="font-size: 0.8rem; color: #ffd166; margin-bottom: 8px;"><i class="fas fa-exclamation-triangle"></i> Estás en tu ÚLTIMO intento (Intento 2/2). Toma en cuenta la retroalimentación anterior antes de subir.</div>` : ''}
+                            ${(del.total_attempts > 0) ? `<div style="font-size: 0.8rem; color: var(--primary); margin-bottom: 8px;"><i class="fas fa-info-circle"></i> Puedes mejorar tu entrega tomando en cuenta la retroalimentación anterior.</div>` : ''}
                             <label class="btn btn-primary btn-sm student-del-upload-btn" data-del-id="${del.id}">
                                 <i class="fas fa-upload"></i> Subir Entrega
                                 <input type="file" hidden accept=".pdf,.docx,.pptx,.doc,.ppt,.xlsx,.xls" data-del-id="${del.id}" class="student-del-file-input">
@@ -378,7 +377,7 @@ const SeminariaUploads = (function () {
     document.addEventListener('click', async (e) => {
         const deleteBtn = e.target.closest('.btn-delete-submission');
         if (deleteBtn) {
-            if (!confirm('¿Estás seguro de eliminar este intento? Podrás subir uno nuevo, pero el intento actual cuenta contra tu límite de 2. Esta acción no se puede deshacer.')) return;
+            if (!confirm('¿Eliminar esta entrega para volver a subir una nueva versión? Esta acción no se puede deshacer.')) return;
             
             const subId = deleteBtn.dataset.subId;
             deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
