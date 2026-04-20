@@ -75,8 +75,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve frontend
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend')));
 
-// Serve uploaded files (protected by auth in routes)
-app.use('/api/uploads/files', express.static(path.join(__dirname, '..', 'uploads')));
+// NOTE: Uploaded files are stored in os.tmpdir() and served via API routes (not as static files)
 
 // ═══════════════ HEALTH CHECK ═══════════════
 app.get('/api/health', async (req, res) => {
