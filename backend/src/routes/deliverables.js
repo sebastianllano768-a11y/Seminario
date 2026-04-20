@@ -28,9 +28,10 @@ const groqAI = require('../services/groqAI');
 
 const router = express.Router();
 
-// File upload config
-// Use memory storage — avoids EROFS on Vercel serverless (read-only filesystem)
-// After upload, the buffer is written manually to os.tmpdir()
+// ═══════════════════════════════════════════════════
+// Use memoryStorage: files stay in RAM as req.file.buffer.
+// We NEVER write to disk — avoids EROFS on Vercel serverless.
+// ═══════════════════════════════════════════════════
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
@@ -45,14 +46,6 @@ const upload = multer({
     }
 });
 
-/**
- * Saves an uploaded file buffer to /tmp and returns the saved path.
- */
-function saveTempFile(buffer, filename) {
-    const tmpPath = path.join(os.tmpdir(), filename);
-    fs.writeFileSync(tmpPath, buffer);
-    return tmpPath;
-}
 
 // ─── List deliverables ───
 router.get('/', authenticate, async (req, res, next) => {
@@ -219,19 +212,17 @@ router.get('/submission/:subId/download', authenticate, requireRole('admin'), as
         if (result.rows.length === 0) return res.status(404).json({ error: 'Archivo no encontrado' });
 
         const sub = result.rows[0];
-        // File is always in /tmp (memoryStorage writes there)
-        const filePath = path.join(os.tmpdir(), sub.filename);
-        
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ error: 'El archivo ya no está disponible en el servidor (almacenamiento temporal limpio).' });
-        }
-        res.setHeader('Content-Disposition', `attachment; filename="${sub.original_name}"`);
-        res.setHeader('Content-Type', sub.mimetype || 'application/octet-stream');
-        res.sendFile(filePath);
+        // NOTE: Files are processed in-memory during upload and not persisted.
+        // On Vercel serverless, files are ephemeral and cannot be re-downloaded.
+        // The file content was already extracted for AI evaluation during upload.
+        return res.status(410).json({
+            error: 'El archivo no está disponible para descarga directa. Los archivos se procesan en tiempo real y no se almacenan de forma permanente en el servidor.'
+        });
     } catch (err) {
         next(err);
     }
 });
+
 
 // ─── Submit file for a deliverable (student) ───
 router.post('/:id/submit', authenticate, upload.single('file'), async (req, res, next) => {
@@ -266,13 +257,8 @@ router.post('/:id/submit', authenticate, upload.single('file'), async (req, res,
             return res.status(400).json({ error: 'Debes adjuntar un archivo' });
         }
 
-        // Save file buffer to /tmp (works on Vercel and local)
+        // Generate a unique reference name for the DB (no disk write needed)
         const uniqueName = `del_${Date.now()}_${Math.round(Math.random() * 1e6)}${path.extname(req.file.originalname)}`;
-        saveTempFile(req.file.buffer, uniqueName);
-
-        // Use the generated name and the buffer size
-        const savedFilename = uniqueName;
-        const savedSize = req.file.buffer.length;
 
         // Check if late
         const isLate = new Date() > new Date(deliverable.deadline);
@@ -282,13 +268,13 @@ router.post('/:id/submit', authenticate, upload.single('file'), async (req, res,
              (deliverable_id, user_id, filename, original_name, mimetype, size_bytes, is_late, attempt_number)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
-            [id, req.user.id, savedFilename, req.file.originalname, req.file.mimetype, savedSize, isLate, totalAttempts + 1]
+            [id, req.user.id, uniqueName, req.file.originalname, req.file.mimetype, req.file.buffer.length, isLate, totalAttempts + 1]
         );
 
         const submission = result.rows[0];
 
-        // Trigger AI evaluation in background (don't block response)
-        triggerAIEvaluation(submission.id, parseInt(id), savedFilename, req.file.originalname);
+        // Trigger AI evaluation in background — pass buffer directly, no disk I/O
+        triggerAIEvaluation(submission.id, parseInt(id), req.file.buffer, req.file.originalname);
 
         res.status(201).json({
             submission,
@@ -324,9 +310,9 @@ router.delete('/submission/:subId', authenticate, async (req, res, next) => {
 });
 
 /**
- * Background AI evaluation trigger
+ * Background AI evaluation — works entirely from in-memory buffer, zero disk access.
  */
-async function triggerAIEvaluation(submissionId, deliverableId, filename, originalName) {
+async function triggerAIEvaluation(submissionId, deliverableId, fileBuffer, originalName) {
     try {
         if (!groqAI.isAvailable()) {
             console.log('⚠️ GROQ_API_KEY not set, skipping AI evaluation');
@@ -340,16 +326,11 @@ async function triggerAIEvaluation(submissionId, deliverableId, filename, origin
             [submissionId]
         );
 
-        // Extract text from file
-        // File is always in /tmp (memoryStorage writes there)
-        const localPath = path.join(__dirname, '../../uploads', filename);
-        const tmpPath = path.join(os.tmpdir(), filename);
-        const filePath = fs.existsSync(localPath) ? localPath : tmpPath;
+        // Extract text directly from the in-memory buffer — no disk read
         const ext = path.extname(originalName).toLowerCase();
-
         let content = '';
         if (['.pdf', '.docx', '.doc'].includes(ext)) {
-            content = await extractText(filePath, originalName);
+            content = await extractText(fileBuffer, originalName);
         }
 
         if (!content || content.trim().length < 20) {
