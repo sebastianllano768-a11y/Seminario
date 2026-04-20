@@ -273,14 +273,14 @@ router.post('/:id/submit', authenticate, upload.single('file'), async (req, res,
 
         const submission = result.rows[0];
 
-        // Trigger AI evaluation in background — pass buffer directly, no disk I/O
-        triggerAIEvaluation(submission.id, parseInt(id), req.file.buffer, req.file.originalname);
+        // Await AI evaluation before responding — Vercel freezes the function after res.json()
+        await triggerAIEvaluation(submission.id, parseInt(id), req.file.buffer, req.file.originalname);
 
         res.status(201).json({
             submission,
             message: isLate
-                ? 'Entrega recibida (con retraso). Pronto tendrás los resultados de tu retroalimentación.'
-                : '¡Entrega recibida a tiempo! Pronto tendrás los resultados de tu retroalimentación.'
+                ? 'Entrega recibida (con retraso). Ya tienes los resultados de tu retroalimentación.'
+                : '¡Entrega recibida a tiempo! Ya tienes los resultados de tu retroalimentación.'
         });
     } catch (err) {
         next(err);
