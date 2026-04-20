@@ -15,8 +15,10 @@ const { requireRole } = require('../middleware/roleGuard');
 
 const router = express.Router();
 
+const os = require('os');
+const fs = require('fs');
+
 // ─── Multer Config ───
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads');
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
 const ALLOWED_MIMETYPES = [
@@ -28,7 +30,16 @@ const ALLOWED_MIMETYPES = [
 ];
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+    destination: (req, file, cb) => {
+        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
+        if (isVercel) {
+            cb(null, os.tmpdir());
+        } else {
+            const uploadPath = path.join(__dirname, '../../uploads');
+            if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+            cb(null, uploadPath);
+        }
+    },
     filename: (req, file, cb) => {
         // Generate secure unique filename
         const uniqueId = crypto.randomBytes(16).toString('hex');

@@ -18,6 +18,8 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 const { pool } = require('../config/database');
 const { authenticate } = require('../middleware/auth');
 const { requireRole } = require('../middleware/roleGuard');
@@ -28,7 +30,17 @@ const router = express.Router();
 
 // File upload config
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads')),
+    destination: (req, file, cb) => {
+        // Use /tmp inside Vercel to avoid EROFS error. Local environment uses /uploads.
+        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
+        if (isVercel) {
+            cb(null, os.tmpdir());
+        } else {
+            const uploadPath = path.join(__dirname, '../../uploads');
+            if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+            cb(null, uploadPath);
+        }
+    },
     filename: (req, file, cb) => {
         const uniqueName = `del_${Date.now()}_${Math.round(Math.random() * 1e6)}${path.extname(file.originalname)}`;
         cb(null, uniqueName);
@@ -213,7 +225,13 @@ router.get('/submission/:subId/download', authenticate, requireRole('admin'), as
         if (result.rows.length === 0) return res.status(404).json({ error: 'Archivo no encontrado' });
 
         const sub = result.rows[0];
-        const filePath = path.join(__dirname, '../../uploads', sub.filename);
+        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
+        const basePath = isVercel ? os.tmpdir() : path.join(__dirname, '../../uploads');
+        const filePath = path.join(basePath, sub.filename);
+        
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'El archivo ya no está disponible en el servidor (almacenamiento temporal limpio).' });
+        }
         res.setHeader('Content-Disposition', `attachment; filename="${sub.original_name}"`);
         res.setHeader('Content-Type', sub.mimetype || 'application/octet-stream');
         res.sendFile(filePath);
@@ -322,7 +340,9 @@ async function triggerAIEvaluation(submissionId, deliverableId, filename, origin
         );
 
         // Extract text from file
-        const filePath = path.join(__dirname, '../../uploads', filename);
+        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
+        const basePath = isVercel ? os.tmpdir() : path.join(__dirname, '../../uploads');
+        const filePath = path.join(basePath, filename);
         const ext = path.extname(originalName).toLowerCase();
 
         let content = '';
