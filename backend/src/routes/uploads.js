@@ -31,13 +31,15 @@ const ALLOWED_MIMETYPES = [
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
-        if (isVercel) {
+        const localUploadPath = path.join(__dirname, '../../uploads');
+        try {
+            if (!fs.existsSync(localUploadPath)) {
+                fs.mkdirSync(localUploadPath, { recursive: true });
+            }
+            cb(null, localUploadPath);
+        } catch (err) {
+            // EROFS (Read-only file system) triggers this catch block softly
             cb(null, os.tmpdir());
-        } else {
-            const uploadPath = path.join(__dirname, '../../uploads');
-            if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
-            cb(null, uploadPath);
         }
     },
     filename: (req, file, cb) => {

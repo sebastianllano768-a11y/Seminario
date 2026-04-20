@@ -31,14 +31,15 @@ const router = express.Router();
 // File upload config
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // Use /tmp inside Vercel to avoid EROFS error. Local environment uses /uploads.
-        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
-        if (isVercel) {
+        const localUploadPath = path.join(__dirname, '../../uploads');
+        try {
+            if (!fs.existsSync(localUploadPath)) {
+                fs.mkdirSync(localUploadPath, { recursive: true });
+            }
+            cb(null, localUploadPath);
+        } catch (err) {
+            // EROFS (Read-only file system) triggers this catch block softly
             cb(null, os.tmpdir());
-        } else {
-            const uploadPath = path.join(__dirname, '../../uploads');
-            if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
-            cb(null, uploadPath);
         }
     },
     filename: (req, file, cb) => {
@@ -225,9 +226,10 @@ router.get('/submission/:subId/download', authenticate, requireRole('admin'), as
         if (result.rows.length === 0) return res.status(404).json({ error: 'Archivo no encontrado' });
 
         const sub = result.rows[0];
-        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
-        const basePath = isVercel ? os.tmpdir() : path.join(__dirname, '../../uploads');
-        const filePath = path.join(basePath, sub.filename);
+        // Try to fetch file from both possible locations
+        const localPath = path.join(__dirname, '../../uploads', sub.filename);
+        const tmpPath = path.join(os.tmpdir(), sub.filename);
+        let filePath = fs.existsSync(localPath) ? localPath : tmpPath;
         
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ error: 'El archivo ya no está disponible en el servidor (almacenamiento temporal limpio).' });
@@ -340,9 +342,10 @@ async function triggerAIEvaluation(submissionId, deliverableId, filename, origin
         );
 
         // Extract text from file
-        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV || __dirname.includes('/var/task');
-        const basePath = isVercel ? os.tmpdir() : path.join(__dirname, '../../uploads');
-        const filePath = path.join(basePath, filename);
+        // Try to read file from both possible locations
+        const localPath = path.join(__dirname, '../../uploads', filename);
+        const tmpPath = path.join(os.tmpdir(), filename);
+        const filePath = fs.existsSync(localPath) ? localPath : tmpPath;
         const ext = path.extname(originalName).toLowerCase();
 
         let content = '';
