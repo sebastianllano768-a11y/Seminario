@@ -29,26 +29,10 @@ const groqAI = require('../services/groqAI');
 const router = express.Router();
 
 // File upload config
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const localUploadPath = path.join(__dirname, '../../uploads');
-        try {
-            if (!fs.existsSync(localUploadPath)) {
-                fs.mkdirSync(localUploadPath, { recursive: true });
-            }
-            cb(null, localUploadPath);
-        } catch (err) {
-            // EROFS (Read-only file system) triggers this catch block softly
-            cb(null, os.tmpdir());
-        }
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = `del_${Date.now()}_${Math.round(Math.random() * 1e6)}${path.extname(file.originalname)}`;
-        cb(null, uniqueName);
-    }
-});
+// Use memory storage — avoids EROFS on Vercel serverless (read-only filesystem)
+// After upload, the buffer is written manually to os.tmpdir()
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
     fileFilter: (req, file, cb) => {
         const allowed = ['.pdf', '.docx', '.doc', '.pptx', '.ppt', '.xlsx', '.xls'];
@@ -60,6 +44,15 @@ const upload = multer({
         }
     }
 });
+
+/**
+ * Saves an uploaded file buffer to /tmp and returns the saved path.
+ */
+function saveTempFile(buffer, filename) {
+    const tmpPath = path.join(os.tmpdir(), filename);
+    fs.writeFileSync(tmpPath, buffer);
+    return tmpPath;
+}
 
 // ─── List deliverables ───
 router.get('/', authenticate, async (req, res, next) => {
@@ -226,10 +219,8 @@ router.get('/submission/:subId/download', authenticate, requireRole('admin'), as
         if (result.rows.length === 0) return res.status(404).json({ error: 'Archivo no encontrado' });
 
         const sub = result.rows[0];
-        // Try to fetch file from both possible locations
-        const localPath = path.join(__dirname, '../../uploads', sub.filename);
-        const tmpPath = path.join(os.tmpdir(), sub.filename);
-        let filePath = fs.existsSync(localPath) ? localPath : tmpPath;
+        // File is always in /tmp (memoryStorage writes there)
+        const filePath = path.join(os.tmpdir(), sub.filename);
         
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ error: 'El archivo ya no está disponible en el servidor (almacenamiento temporal limpio).' });
@@ -275,6 +266,14 @@ router.post('/:id/submit', authenticate, upload.single('file'), async (req, res,
             return res.status(400).json({ error: 'Debes adjuntar un archivo' });
         }
 
+        // Save file buffer to /tmp (works on Vercel and local)
+        const uniqueName = `del_${Date.now()}_${Math.round(Math.random() * 1e6)}${path.extname(req.file.originalname)}`;
+        saveTempFile(req.file.buffer, uniqueName);
+
+        // Use the generated name and the buffer size
+        const savedFilename = uniqueName;
+        const savedSize = req.file.buffer.length;
+
         // Check if late
         const isLate = new Date() > new Date(deliverable.deadline);
 
@@ -283,19 +282,19 @@ router.post('/:id/submit', authenticate, upload.single('file'), async (req, res,
              (deliverable_id, user_id, filename, original_name, mimetype, size_bytes, is_late, attempt_number)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
-            [id, req.user.id, req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, isLate, totalAttempts + 1]
+            [id, req.user.id, savedFilename, req.file.originalname, req.file.mimetype, savedSize, isLate, totalAttempts + 1]
         );
 
         const submission = result.rows[0];
 
         // Trigger AI evaluation in background (don't block response)
-        triggerAIEvaluation(submission.id, parseInt(id), req.file.filename, req.file.originalname);
+        triggerAIEvaluation(submission.id, parseInt(id), savedFilename, req.file.originalname);
 
         res.status(201).json({
             submission,
             message: isLate
-                ? 'Entrega recibida (con retraso). Pronto tendr\u00e1s los resultados de tu retroalimentaci\u00f3n.'
-                : '\u00a1Entrega recibida a tiempo! Pronto tendr\u00e1s los resultados de tu retroalimentaci\u00f3n.'
+                ? 'Entrega recibida (con retraso). Pronto tendrás los resultados de tu retroalimentación.'
+                : '¡Entrega recibida a tiempo! Pronto tendrás los resultados de tu retroalimentación.'
         });
     } catch (err) {
         next(err);
@@ -342,7 +341,7 @@ async function triggerAIEvaluation(submissionId, deliverableId, filename, origin
         );
 
         // Extract text from file
-        // Try to read file from both possible locations
+        // File is always in /tmp (memoryStorage writes there)
         const localPath = path.join(__dirname, '../../uploads', filename);
         const tmpPath = path.join(os.tmpdir(), filename);
         const filePath = fs.existsSync(localPath) ? localPath : tmpPath;

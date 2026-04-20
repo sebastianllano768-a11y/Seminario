@@ -9,16 +9,15 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const os = require('os');
+const fs = require('fs');
 const { pool } = require('../config/database');
 const { authenticate } = require('../middleware/auth');
 const { requireRole } = require('../middleware/roleGuard');
 
 const router = express.Router();
 
-const os = require('os');
-const fs = require('fs');
-
-// ─── Multer Config ───
+// Use memoryStorage to avoid EROFS on Vercel (read-only /var/task filesystem)
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
 const ALLOWED_MIMETYPES = [
@@ -29,39 +28,16 @@ const ALLOWED_MIMETYPES = [
     'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 ];
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const localUploadPath = path.join(__dirname, '../../uploads');
-        try {
-            if (!fs.existsSync(localUploadPath)) {
-                fs.mkdirSync(localUploadPath, { recursive: true });
-            }
-            cb(null, localUploadPath);
-        } catch (err) {
-            // EROFS (Read-only file system) triggers this catch block softly
-            cb(null, os.tmpdir());
-        }
-    },
-    filename: (req, file, cb) => {
-        // Generate secure unique filename
-        const uniqueId = crypto.randomBytes(16).toString('hex');
-        const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `${Date.now()}-${uniqueId}${ext}`);
-    }
-});
-
-const fileFilter = (req, file, cb) => {
-    if (ALLOWED_MIMETYPES.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Formato no soportado. Usa PDF, DOCX o PPTX'), false);
-    }
-};
-
 const upload = multer({
-    storage,
-    fileFilter,
-    limits: { fileSize: MAX_FILE_SIZE }
+    storage: multer.memoryStorage(),
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (req, file, cb) => {
+        if (ALLOWED_MIMETYPES.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Formato no soportado. Usa PDF, DOCX o PPTX'), false);
+        }
+    }
 });
 
 // ═══════════════ UPLOAD FILE ═══════════════
@@ -81,12 +57,19 @@ router.post('/', authenticate, (req, res, next) => {
             return res.status(400).json({ error: 'No se recibió ningún archivo' });
         }
 
+        // Write buffer to /tmp (writable on Vercel Serverless)
+        const uniqueId = crypto.randomBytes(16).toString('hex');
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        const savedFilename = `${Date.now()}-${uniqueId}${ext}`;
+        const tmpPath = path.join(os.tmpdir(), savedFilename);
+        fs.writeFileSync(tmpPath, req.file.buffer);
+
         try {
             const result = await pool.query(
                 `INSERT INTO uploads (user_id, filename, original_name, mimetype, size_bytes)
                  VALUES ($1, $2, $3, $4, $5)
                  RETURNING *`,
-                [req.user.id, req.file.filename, req.file.originalname, req.file.mimetype, req.file.size]
+                [req.user.id, savedFilename, req.file.originalname, req.file.mimetype, req.file.buffer.length]
             );
 
             res.status(201).json({
