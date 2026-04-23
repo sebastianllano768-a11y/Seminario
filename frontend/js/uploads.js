@@ -282,6 +282,12 @@ const SeminariaUploads = (function () {
                     ` : (!isExpired ? `
                         <div class="student-del-upload">
                             ${(del.total_attempts > 0) ? `<div style="font-size: 0.8rem; color: var(--primary); margin-bottom: 8px;"><i class="fas fa-info-circle"></i> Puedes mejorar tu entrega tomando en cuenta la retroalimentación anterior.</div>` : ''}
+                            <div class="student-privacy-notice">
+                                <i class="fas fa-shield-alt"></i>
+                                <div>
+                                    <span>La entrega es <strong>voluntaria</strong>. Si decides subir un archivo, te pedimos evitar incluir información personal o confidencial.</span>
+                                </div>
+                            </div>
                             <label class="btn btn-primary btn-sm student-del-upload-btn" data-del-id="${del.id}">
                                 <i class="fas fa-upload"></i> Subir Entrega
                                 <input type="file" hidden accept=".pdf,.docx,.pptx,.doc,.ppt,.xlsx,.xls" data-del-id="${del.id}" class="student-del-file-input">

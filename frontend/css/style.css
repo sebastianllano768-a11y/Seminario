@@ -1682,6 +1682,27 @@ body.role-student li.student-only { display: list-item; }
     margin-top: 4px;
 }
 
+.student-privacy-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.student-privacy-notice i {
+    margin-top: 2px;
+    font-size: 0.85rem;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
 .student-del-upload-btn {
     display: inline-flex;
     align-items: center;
